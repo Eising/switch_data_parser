@@ -23,6 +23,11 @@ class SwitchConfigParser
         @in_interface_block = 'ethernet'
         next
 
+      when /interface vlan/ then
+        parse_interface_vlan(line)
+        @in_interface_block = 'vlan'
+        next
+
       when /^exit/ then
         @interfaces.merge @current_interface unless @current_interface.nil?
         @in_interface_block = false
@@ -57,6 +62,16 @@ class SwitchConfigParser
       range
     end
     vlans.flatten
+  end
+
+  def parse_interface_vlan(line)
+    case line
+    when /interface vlan/
+      @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
+      @interfaces[@identifier] = {}
+    when /name/
+      @interfaces[@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
+    end
   end
 
   def parse_interface_ethernet(line)
@@ -94,7 +109,7 @@ class SwitchConfigParser
       when /general/
         @interfaces[@identifier][:switchport][:mode] = 'general'
 
-      when /trunk access vlan/
+      when /access vlan/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
         @interfaces[@identifier][:switchport][:vlans].merge({ :add => parse_vlan_line(line) })
 
