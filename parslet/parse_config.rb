@@ -25,6 +25,6 @@ class SwitchConfigParslet < Parslet::Parser
   root(:interface_config)
 end
 
-config = File.read('../switch.config').chomp
+config = File.read('../data/switch.config').chomp
 
 ap SwitchConfigParslet.new.parse(config)

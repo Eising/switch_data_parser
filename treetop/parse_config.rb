@@ -55,7 +55,7 @@ class Parser
   end
 end
 
-config = File.read('switch.config').chomp
+config = File.read('../data/switch.config').chomp
 parser = Parser.new(config)
 
 ap parser.get_tree
