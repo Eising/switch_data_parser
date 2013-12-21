@@ -50,17 +50,17 @@ class SwitchConfigParser
 
   private
 
-  # FIXME: make sure range is correct..
   def parse_vlan_line(line)
-    ranges = line.split(',')
+    ranges = line.split(' ')[5].split(',')
 
-    vlans = ranges.each do |range|
+    vlans = ranges.map do |range|
       if range =~ /-/
         a = range.split('-')
         range = (a[0]..a[1]).to_a
       end
       range
     end
+
     vlans.flatten
   end
 
@@ -71,6 +71,8 @@ class SwitchConfigParser
       @interfaces[@identifier] = {}
     when /name/
       @interfaces[@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
+    else
+      puts "unrecognised line: #{line}" if @debug
     end
   end
 
@@ -100,37 +102,39 @@ class SwitchConfigParser
       @interfaces[@identifier][:switchport] ||= {}
 
       case line
-      when /access/
+      when /switchport access/
         @interfaces[@identifier][:switchport][:mode] = 'access'
 
-      when /mode trunk/
+      when /switchport mode trunk/
         @interfaces[@identifier][:switchport][:mode] = 'trunk'
 
-      when /general/
+      when /switchport mode general/
         @interfaces[@identifier][:switchport][:mode] = 'general'
 
-      when /access vlan/
+      when /switchport access vlan/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans].merge({ :add => parse_vlan_line(line) })
+        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
 
-      when /trunk allowed vlan add/
+      when /switchport trunk allowed vlan add/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans].merge({ :add => parse_vlan_line(line) })
+        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
 
-      when /trunk allowed vlan remove/
+      when /switchport trunk allowed vlan remove/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans].merge({ :remove => parse_vlan_line(line) })
+        @interfaces[@identifier][:switchport][:vlans][:remove] = parse_vlan_line(line)
 
-      when /general allowed vlan add/
+      when /switchport general allowed vlan add/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans].merge({ :add => parse_vlan_line(line) })
+        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
 
-      when /general allowed vlan remove/
+      when /switchport general allowed vlan remove/
         @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans].merge({ :remove => parse_vlan_line(line) })
+        @interfaces[@identifier][:switchport][:vlans][:remove] = parse_vlan_line(line)
 
-      when /general acceptable-frame-type/
+      when /switchport general acceptable-frame-type/
         @interfaces[@identifier][:switchport][:acceptable_frame_type] = line.split[-1]
+      else
+        puts "unrecognised line: #{line}" if @debug
       end
     end
   end
