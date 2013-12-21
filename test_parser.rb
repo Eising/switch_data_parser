@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative 'lib/switch_config_parser'
+require_relative 'lib/parse_config'
 require 'awesome_print'
 
 parser = SwitchConfigParser.new(IO.readlines("data/switch.config"))
