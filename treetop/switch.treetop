@@ -1,0 +1,25 @@
+grammar SwitchPort
+  rule port
+    "interface" spaces interface_type spaces switch_stack "/" speed ethernet_port
+  end
+
+  rule interface_type
+    "ethernet" <InterfaceType> / "vlan" <InterfaceType>
+  end
+
+  rule switch_stack
+    [0-9] <SwitchStack>
+  end
+
+  rule speed
+    'g' <Speed>
+  end
+
+  rule ethernet_port
+    [0-9]+ <EthernetPort>
+  end
+
+  rule spaces
+    [\s]+
+  end
+end
