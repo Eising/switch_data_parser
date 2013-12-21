@@ -67,8 +67,9 @@ class SwitchConfigParser
   def parse_interface_vlan(line)
     case line
     when /interface vlan/
+      vlan = line.split[2]
       @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
-      @interfaces[@identifier] = {}
+      @interfaces[@identifier] = { :vlan => vlan }
     when /name/
       @interfaces[@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
     else
