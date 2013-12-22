@@ -58,10 +58,13 @@ class SwitchConfigParser
         a = range.split('-')
         range = (a[0]..a[1]).to_a
       end
-      range
     end
 
-    vlans.flatten
+    vlan_hash = {}
+
+    vlans.flatten.each { |vlan| vlan_hash[vlan] = {} unless vlan.nil? }
+
+    vlan_hash
   end
 
   def parse_interface_vlan(line)
