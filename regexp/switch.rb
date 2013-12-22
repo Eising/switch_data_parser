@@ -86,7 +86,7 @@ class Switch
         @stack_member = interface[:stack_member]
         @port         = interface[:port]
         @unit         = interface[:unit]
-        @switchport   = Switch::Interface::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
+        @switchport   = Switch::Interface::Attribute::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
       end
 
       def inspect
@@ -117,43 +117,57 @@ class Switch
         @interface   = interface
         @description = interface[:description]
         @channel     = interface[:channel]
-        @switchport  = Switch::Interface::Switchport.new(interface[:switchport])
+        @switchport  = Switch::Interface::Attribute::Switchport.new(interface[:switchport])
       end
 
+      #def description
+      #  "description: #{@description}" unless description.nil?
+      #end
+
+      #def channel
+      #  "channel: #{@channel}" unless channel.nil?
+      #end
+
       def inspect
-        "channel: #{@channel}, description: #{@description}"
+        "description: #{@description}, channel: #{@channel}, switchport: #{@switchport.inspect}"
       end
     end
 
-    class Switchport
-      def initialize(switchport)
-        @switchport = switchport
-        @mode       = switchport[:mode]
-        @vlans      = Switch::Interface::Vlans.new(switchport[:vlans])
+    module Attribute
+      class Switchport
+        def initialize(switchport)
+          @switchport = switchport
+          @mode       = switchport[:mode]
+          @vlans      = Switch::Interface::Attribute::Vlans.new(switchport[:vlans])
+        end
+
+        def mode
+          "mode: #{@mode}" unless @mode.nil?
+        end
+
+        def inspect
+          "[mode: #{@mode}, #{@vlans.inspect}]" unless @vlans.nil? and @mode.nil?
+        end
       end
 
-      def inspect
-        "[mode: #{@mode}, vlans: #{@vlans.inspect}]"
-      end
-    end
+      class Vlans
+        def initialize(vlans)
+          @vlans  = vlans
+          @add    = vlans[:add]
+          @remove = vlans[:remove]
+        end
 
-    class Vlans
-      def initialize(vlans)
-        @vlans  = vlans
-        @add    = vlans[:add]
-        @remove = vlans[:remove]
-      end
+        def inspect
+          "(vlans: #{[self.add, self.remove].join(', ')})" unless @add.nil? and @remove.nil?
+        end
 
-      def inspect
-        [self.add, self.remove].join(', ').chomp.chomp
-      end
+        def add
+          "add: [#{@add.join(', ')}]" unless @add.nil?
+        end
 
-      def add
-        "add: #{@add}" unless @add.nil?
-      end
-
-      def remove
-        "remove: #{@remove}" unless @remove.nil?
+        def remove
+          "remove: [#{@remove.join(', ')}]" unless @remove.nil?
+        end
       end
     end
   end

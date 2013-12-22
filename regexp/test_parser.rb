@@ -27,9 +27,6 @@ bridge_table = bridge_table_parser.get_config
 t = Switch::Bridge::Table.new(bridge_table)
 c = Switch::Config.new(switch_config)
 
-#ap t
 ap c.get_vlan_interfaces
 ap c.get_port_channel_interfaces
 ap c.get_ethernet_interfaces
-
-
