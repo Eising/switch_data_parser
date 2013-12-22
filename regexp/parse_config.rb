@@ -149,8 +149,8 @@ class SwitchConfigParser
     case line
 
     when /interface ethernet/
-      @interface_ethernet[:unit] = line.split[2].split('/')[0]
-      @interface_ethernet[:unit] = line.split[2].split('/')[1].gsub(/[a-z]*/, '')
+      @interface_ethernet[:stack_member] = line.split[2].split('/')[0]
+      @interface_ethernet[:port] = line.split[2].split('/')[1].gsub(/[a-z]*/, '')
       @interface_ethernet[:unit] = line.split[2].split('/')[1].gsub(/[0-9]*/, '')
 
     when /description/

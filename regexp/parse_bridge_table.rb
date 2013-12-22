@@ -2,8 +2,8 @@
 
 class SwitchBridgeTableParser
   def initialize(io, debug = false)
-    @io         = io
-    @debug      = debug
+    @io     = io
+    @debug  = debug
     @config = {}
   end
 
@@ -34,9 +34,6 @@ class SwitchBridgeTableParser
       else
         raise ArgumentError, "unknown interface type: #{interface}"
       end
-
-      #@config[interface][:interface] ||= {}
-      #@config[interface][:interface].merge!()
 
       @config[interface][:vlan] ||= {}
       @config[interface][:vlan][vlan] ||= {}
