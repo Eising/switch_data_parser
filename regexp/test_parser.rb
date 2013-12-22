@@ -19,14 +19,26 @@ bridge_table = bridge_table_parser.get_config
 #  interface[:port] == "5" and interface[:unit] == 'g' and interface[:stack_member] == "1"
 #}
 
-#ap switch_config[:interface][:port_channel]
+#ap switch_config
 #ap bridge_table
 
 #ap config_parser.get_config.deep_merge(bridge_table_parser.get_config)
 
-t = Switch::Bridge::Table.new(bridge_table)
-c = Switch::Config.new(switch_config)
+switch = Switch.new
+switch.load_bridge_table(bridge_table)
+switch.load_switch_config(switch_config)
 
-ap c.get_vlan_interfaces
-ap c.get_port_channel_interfaces
-ap c.get_ethernet_interfaces
+ap switch.config #.vlan_interfaces
+#ap switch.config #.port_channel_interfaces
+
+#switch.config.ethernet_interfaces.each do |identifier, interface|
+#  ap identifier
+#  ap interface
+#end
+
+#switch.bridge_table.interfaces.each do |identifier, line|
+#  p line
+#end
+
+#puts '-----------------------'
+#ap switch.bridge_table
