@@ -33,9 +33,19 @@ class SwitchConfigParser
         @config[:interface] ||= {}
         @config[:interface][:vlan] ||= {}
 
-        parse_interface_vlan(line)
         @in_interface_block = 'vlan'
         next
+
+      when /interface port-channel/ then
+
+        @config[:interface] ||= {}
+        @config[:interface][:port_channel] ||= {}
+        @identifier = line.gsub(/ /, '_').gsub(/-/, '_').chomp
+        @config[:interface][:port_channel][@identifier] ||= {}
+
+        @in_interface_block = 'port_channel'
+        next
+
 
       when /^exit/ then
         @in_interface_block = false
@@ -44,8 +54,9 @@ class SwitchConfigParser
       end
 
       case @in_interface_block
-      when 'ethernet' then parse_interface_ethernet(line)
-      when 'vlan'     then parse_interface_vlan(line)
+      when 'ethernet'     then parse_interface_ethernet(line)
+      when 'vlan'         then parse_interface_vlan(line)
+      when 'port_channel' then parse_interface_port_channel(line)
       else
         puts "unrecognised line: #{line}" if @debug
       end
@@ -80,8 +91,12 @@ class SwitchConfigParser
     when /interface vlan/
       vlan = line.split[2]
       @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
-      @config[:interface][:vlan][@identifier] = { :vlan => vlan }
+      @config[:interface][:vlan][@identifier] ||= {}
+      @config[:interface][:vlan][@identifier].merge!({ :vlan => vlan })
     when /name/
+      vlan = line.split[2]
+      @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
+      @config[:interface][:vlan][@identifier] ||= {}
       @config[:interface][:vlan][@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
     else
       puts "unrecognised line: #{line}" if @debug
@@ -151,6 +166,20 @@ class SwitchConfigParser
       else
         puts "unrecognised line: #{line}" if @debug
       end
+    else
+      puts "unrecognised line: #{line}" if @debug
+    end
+  end
+
+  def parse_interface_port_channel(line)
+    case line
+    when /interface port-channel/
+      channel = line.split[2]
+      @config[:interface][:port_channel][@identifier] = { :channel => channel }
+    when /description/
+      @config[:interface][:port_channel][@identifier][:description] = line.gsub(/description '/, '').chomp.chomp('\'')
+    else
+      puts "unrecognised line: #{line}" if @debug
     end
   end
 end
