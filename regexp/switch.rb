@@ -13,10 +13,6 @@ class Switch
     @bridge_table = Switch::Bridge::Table.new(config)
   end
 
-#  def merge_bridge_table
-#    @config.merge(@bridge_table)
-#  end
-
   module Bridge
     class Table
       attr_reader :interfaces
@@ -85,11 +81,6 @@ class Switch
         end
       end
     end
-
-    #def merge
-    #  @ethernet_interfaces.each do |port|
-    #  end
-    #end
   end
 
   class Interface
@@ -104,22 +95,8 @@ class Switch
         @unit         = interface[:unit]
         @switchport   = Switch::Interface::Attribute::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
       end
-
-      #def inspect
-      #  "stack_member: #{@stack_member}, port: #{@port}, unit: #{@unit}, description: #{@description}, switchport: #{@switchport.inspect}".chomp
-      #end
-
-      #def mode
-      #  "mode: #{@mode} " unless @mode.nil?
-      #end
     end
 
-    #
-    # Describe a VLAN interface:
-    # 
-    # * desciption
-    # * vlan
-    #
     class Vlan
       attr_reader :vlan, :description
 
@@ -128,10 +105,6 @@ class Switch
         @vlan        = interface[:vlan]
         @description = interface[:description]
       end
-
-      #def inspect
-      #  "vlan: #{@vlan}, description: #{@description}"
-      #end
     end
 
     class PortChannel
@@ -143,18 +116,6 @@ class Switch
         @channel     = interface[:channel]
         @switchport  = Switch::Interface::Attribute::Switchport.new(interface[:switchport])
       end
-
-      #def description
-      #  "description: #{@description}" unless description.nil?
-      #end
-
-      #def channel
-      #  "channel: #{@channel}" unless channel.nil?
-      #end
-
-#      def inspect
-#        "description: #{@description}, channel: #{@channel}, switchport: #{@switchport.inspect}"
-#      end
     end
 
     module Attribute
@@ -173,14 +134,6 @@ class Switch
           end
         end
       end
-
-#        def mode
-#          "mode: #{@mode}" unless @mode.nil?
-#        end
-#
-#        def inspect
-#          "[mode: #{@mode}, #{@vlans.inspect}]" unless @vlans.nil? and @mode.nil?
-#        end
 
       class Vlans
         attr_accessor :vlans
@@ -202,34 +155,6 @@ class Switch
           @macs = macs
         end
       end
-
-#<Switch::Bridge::Entry:0x00000001c2cbe8 @identifier="1_g28", @port="g", @unit="2", @switch_member="1", @vlans=#<Switch::Interface::Attribute::Vlan:0x00000001c2cbc0 @vlans={"313"=>{"0050.5603.0064"=>"Dynamic", "0050.5603.0065"=>"Dynamic", "0050.5603.0066"=>"Dynamic", "0050.5603.0068"=>"Dynamic", "0050.5603.006A"=>"Dynamic"}}>
-
-
-#      class Vlans
-#        attr_reader :add, :remove
-#
-#        def initialize(vlans)
-#        end
-#
-#        def foo
-#          add.each do |vlan|
-#          end
-#        end
-
-#        def inspect
-#          "vlans: add: '#{add}', remove: '#{remove}'"
-#          "(vlans: #{[self.add, self.remove].join(', ')})" unless @add.nil? and @remove.nil?
-#        end
-
-#        def add
-#          "add: [#{@add.join(', ')}]" unless @add.nil?
-#        end
-#
-#        def remove
-#          "remove: [#{@remove.join(', ')}]" unless @remove.nil?
-#        end
-#      end
     end
   end
 end
