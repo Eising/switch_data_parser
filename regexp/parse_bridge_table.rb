@@ -10,28 +10,37 @@ class SwitchBridgeTableParser
   def parse_config
     @io.each do |line|
 
-      # FIXME:
-      # * would adding the management interfaces be usedful?
-      # * management interfaces have no interface entry in the bridge table so
-      #   skip them for now...
-      next if line.split.length != 4
+      case line.split.length
+      when 4
+        vlan, mac, interface, mode  = *line.split
+      when 3
+        vlan, mac, mode, interface  = *line.split, "none"
+      else
+        raise ArgumentError, "could not parse line: #{line}"
+      end
 
-      vlan, mac, interface, mode  = *line.split
+      interface.gsub!('/', '_')
 
-      # FIXME:
-      # * ignore channel interfaces for now..
-      next if interface == "ch2"
+      @config ||= {}
+      @config[interface] ||= {}
 
-      identifier = "interface_ethernet_#{interface}".gsub!('/', '_')
+      case interface
+      when /none/
+      when /ch2/
+      when /[0-9]_[a-z]{0,2}[0-9]{0,2}/
+        @config[interface][:stack_member] = interface.split('_')[0]
+        @config[interface][:unit] = interface.split('_')[1].match(/[0-9]/)[0]
+        @config[interface][:port] = interface.split('_')[1].match(/[a-z]+/)[0]
+      else
+        raise ArgumentError, "unknown interface type: #{interface}"
+      end
 
-      @config[:interface] ||= {}
-      @config[:interface][:ethernet] ||= {}
-      @config[:interface][:ethernet][identifier] ||= {}
-      @config[:interface][:ethernet][identifier][:switchport] ||= {}
-      @config[:interface][:ethernet][identifier][:switchport][:vlans] ||= {}
-      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add] ||= {}
-      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add][vlan] ||= {}
-      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add][vlan].merge!({ mac => mode })
+      #@config[interface][:interface] ||= {}
+      #@config[interface][:interface].merge!()
+
+      @config[interface][:vlan] ||= {}
+      @config[interface][:vlan][vlan] ||= {}
+      @config[interface][:vlan][vlan].merge!({ mac => mode })
     end
   end
 

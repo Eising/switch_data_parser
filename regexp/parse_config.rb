@@ -82,11 +82,12 @@ class SwitchConfigParser
       range
     end
 
-    vlan_hash = {}
+    #vlan_hash = {}
 
-    vlans.flatten.each { |vlan| vlan_hash[vlan] = {} unless vlan.nil? }
+    #vlans.flatten.each { |vlan| vlan_hash[vlan] = {} unless vlan.nil? }
 
-    vlan_hash
+    #vlan_hash
+    vlans.flatten
   end
 
   def parse_switchport(line, config)
