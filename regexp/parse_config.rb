@@ -89,7 +89,9 @@ class SwitchConfigParser
     vlan_hash
   end
 
-  def parse_switchport(line, switchport)
+  def parse_switchport(line, config)
+    switchport = config[:switchport] ||= {}
+
     case line
     when /switchport access vlan/
       switchport[:mode] = 'access'
@@ -160,7 +162,7 @@ class SwitchConfigParser
       }
 
     when /switchport/
-      parse_switchport(line, @interface_ethernet[:switchport] ||= {})
+      parse_switchport(line, @interface_ethernet)
 
     else
       puts "unrecognised line: #{line}" if @debug
@@ -177,7 +179,7 @@ class SwitchConfigParser
       @interface_port_channel[:description] = line.gsub(/description '/, '').chomp.chomp('\'')
 
     when /switchport/
-      parse_switchport(line, @interface_port_channel[:switchport] ||= {})
+      parse_switchport(line, @interface_port_channel)
 
     else
       puts "unrecognised line: #{line}" if @debug
