@@ -128,6 +128,8 @@ class SwitchConfigParser
 
     when /switchport/
       @interface_ethernet[:switchport] ||= {}
+      @interface_ethernet[:switchport][:mode] ||= {}
+      @interface_ethernet[:switchport][:vlans] ||= {}
 
       switchport = @interface_ethernet[:switchport]
 
@@ -142,23 +144,18 @@ class SwitchConfigParser
         switchport[:mode] = 'general'
 
       when /switchport access vlan/
-        switchport[:vlans] ||= {}
         switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport trunk allowed vlan add/
-        switchport[:vlans] ||= {}
         switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport trunk allowed vlan remove/
-        switchport[:vlans] ||= {}
         switchport[:vlans][:remove] = parse_vlan_line(line)
 
       when /switchport general allowed vlan add/
-        switchport[:vlans] ||= {}
         switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport general allowed vlan remove/
-        switchport[:vlans] ||= {}
         switchport[:vlans][:remove] = parse_vlan_line(line)
 
       when /switchport general acceptable-frame-type/
