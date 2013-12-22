@@ -14,4 +14,4 @@ bridge_table_parser = SwitchBridgeTableParser.new(IO.readlines("../data/bridge_t
 bridge_table_parser.parse_config
 #ap bridge_table_parser.get_interfaces
 
-ap config_parser.get_interfaces.deep_merge(bridge_table_parser.get_interfaces)
+ap config_parser.get_config.deep_merge(bridge_table_parser.get_config)

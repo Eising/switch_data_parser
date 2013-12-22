@@ -2,12 +2,13 @@
 
 class SwitchConfigParser
   def initialize(io, debug = false)
-    @io         = io
-    @debug      = debug
-    @interfaces = {}
+    @io     = io
+    @debug  = debug
+    @config = {}
   end
 
   def parse_config
+
     @io.each do |line|
 
       case line
@@ -19,17 +20,24 @@ class SwitchConfigParser
         next
 
       when /interface ethernet/ then
+
+        @config[:interface] ||= {}
+        @config[:interface][:ethernet] ||= {}
+
         parse_interface_ethernet(line)
         @in_interface_block = 'ethernet'
         next
 
       when /interface vlan/ then
+
+        @config[:interface] ||= {}
+        @config[:interface][:vlan] ||= {}
+
         parse_interface_vlan(line)
         @in_interface_block = 'vlan'
         next
 
       when /^exit/ then
-        @interfaces.merge @current_interface unless @current_interface.nil?
         @in_interface_block = false
         next
 
@@ -44,8 +52,8 @@ class SwitchConfigParser
     end
   end
 
-  def get_interfaces
-    @interfaces
+  def get_config
+    @config
   end
 
   private
@@ -72,9 +80,9 @@ class SwitchConfigParser
     when /interface vlan/
       vlan = line.split[2]
       @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
-      @interfaces[@identifier] = { :vlan => vlan }
+      @config[:interface][:vlan][@identifier] = { :vlan => vlan }
     when /name/
-      @interfaces[@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
+      @config[:interface][:vlan][@identifier][:description] = line.gsub(/name "/, '').chomp.chomp('"')
     else
       puts "unrecognised line: #{line}" if @debug
     end
@@ -86,57 +94,60 @@ class SwitchConfigParser
 
       @identifier = line.gsub(' ', '_').gsub('/', '_').chomp
 
-      @interfaces[@identifier] = {
+      @interface_ethernet = @config[:interface][:ethernet][@identifier]
+
+      @interface_ethernet = {
         :unit => line.split[2].split('/')[0],
         :port => line.split[2].split('/')[1].gsub(/[a-z]*/, ''),
         :type => line.split[2].split('/')[1].gsub(/[0-9]*/, ''),
       }
 
     when /description/
-      @interfaces[@identifier][:description] = line.gsub(/description '/, '').chomp.chomp('\'')
+      @interface_ethernet[:description] = line.gsub(/description '/, '').chomp.chomp('\'')
 
     when /channel-group/
-      @interfaces[@identifier][:channel_group] = {
+      @interface_ethernet[:channel_group] = {
         :id   => line.split[1],
         :mode => line.split[3],
       }
 
     when /switchport/
+      @interface_ethernet[:switchport] ||= {}
 
-      @interfaces[@identifier][:switchport] ||= {}
+      switchport = @interface_ethernet[:switchport]
 
       case line
       when /switchport access/
-        @interfaces[@identifier][:switchport][:mode] = 'access'
+        switchport[:mode] = 'access'
 
       when /switchport mode trunk/
-        @interfaces[@identifier][:switchport][:mode] = 'trunk'
+        switchport[:mode] = 'trunk'
 
       when /switchport mode general/
-        @interfaces[@identifier][:switchport][:mode] = 'general'
+        switchport[:mode] = 'general'
 
       when /switchport access vlan/
-        @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
+        switchport[:vlans] ||= {}
+        switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport trunk allowed vlan add/
-        @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
+        switchport[:vlans] ||= {}
+        switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport trunk allowed vlan remove/
-        @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans][:remove] = parse_vlan_line(line)
+        switchport[:vlans] ||= {}
+        switchport[:vlans][:remove] = parse_vlan_line(line)
 
       when /switchport general allowed vlan add/
-        @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans][:add] = parse_vlan_line(line)
+        switchport[:vlans] ||= {}
+        switchport[:vlans][:add] = parse_vlan_line(line)
 
       when /switchport general allowed vlan remove/
-        @interfaces[@identifier][:switchport][:vlans] ||= {}
-        @interfaces[@identifier][:switchport][:vlans][:remove] = parse_vlan_line(line)
+        switchport[:vlans] ||= {}
+        switchport[:vlans][:remove] = parse_vlan_line(line)
 
       when /switchport general acceptable-frame-type/
-        @interfaces[@identifier][:switchport][:acceptable_frame_type] = line.split[-1]
+        switchport[:acceptable_frame_type] = line.split[-1]
       else
         puts "unrecognised line: #{line}" if @debug
       end

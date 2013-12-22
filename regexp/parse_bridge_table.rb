@@ -4,7 +4,7 @@ class SwitchBridgeTableParser
   def initialize(io, debug = false)
     @io         = io
     @debug      = debug
-    @interfaces = {}
+    @config = {}
   end
 
   def parse_config
@@ -18,18 +18,24 @@ class SwitchBridgeTableParser
 
       vlan, mac, interface, mode  = *line.split
 
+      # FIXME:
+      # * ignore channel interfaces for now..
+      next if interface == "ch2"
+
       identifier = "interface_ethernet_#{interface}".gsub!('/', '_')
 
-      @interfaces[identifier] ||= {}
-      @interfaces[identifier][:switchport] ||= {}
-      @interfaces[identifier][:switchport][:vlans] ||= {}
-      @interfaces[identifier][:switchport][:vlans][:add] ||= {}
-      @interfaces[identifier][:switchport][:vlans][:add][vlan] ||= {}
-      @interfaces[identifier][:switchport][:vlans][:add][vlan].merge!({ mac => mode })
+      @config[:interface] ||= {}
+      @config[:interface][:ethernet] ||= {}
+      @config[:interface][:ethernet][identifier] ||= {}
+      @config[:interface][:ethernet][identifier][:switchport] ||= {}
+      @config[:interface][:ethernet][identifier][:switchport][:vlans] ||= {}
+      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add] ||= {}
+      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add][vlan] ||= {}
+      @config[:interface][:ethernet][identifier][:switchport][:vlans][:add][vlan].merge!({ mac => mode })
     end
   end
 
-  def get_interfaces
-    @interfaces
+  def get_config
+    @config
   end
 end
