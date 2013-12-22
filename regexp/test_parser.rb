@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require_relative 'lib/parse_config'
-require_relative 'lib/parse_bridge_table'
+require_relative 'parse_config'
+require_relative 'parse_bridge_table'
 
 require 'awesome_print'
 require 'hash_deep_merge'
