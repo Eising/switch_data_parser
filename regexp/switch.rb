@@ -11,37 +11,128 @@ class Switch
 
   def load_bridge_table(config)
     @bridge_table = Switch::Bridge::Table.new(config)
+
+    # FIXME; remove this from this method
+    merge_bridge_table_entries_with_switch_config
   end
 
+  # FIXME: 'duplicate' @config and call it 'merged data' to prevent confusion between data sources and merged data
+
+  # FIXME: check for mismatch between vlan 'modes' between bridge table and config
+  def merge_bridge_table_entries_with_switch_config
+#    @bridge_table.entries.each do |identifier, entry|
+#      puts identifier
+#      puts entry.port
+#      puts entry.unit
+#      puts entry.stack_member
+#      ap entry.vlans
+#    end
+
+    @config.ethernet_interfaces.each do |identifier, interface|
+      if defined?(interface.switchport.added)
+        macs = @bridge_table.find_macs_for_port(interface.stack_member, interface.unit, interface.port)
+        unless macs.nil?
+          interface.switchport.added.vlans.merge!(macs)
+        end
+      end
+    end
+  end
+
+  def to_hash
+    {
+      :config => config.to_hash,
+      :bridge_table => bridge_table.to_hash,
+    }
+  end
+
+  alias_method :inspect, :to_hash
+  alias_method :to_s, :to_hash
+
+  # for each vlan associated with an ethernet interface
+  # search the bridge table for the interface port
+  # then merge the resulting MAC hash with
+  # the interface add hash
+  #def merge_vlan(stack_member, port, unit, vlans)
+
+    # return macs based on vlan
+    #@bridge_table.entries[]
+
+  #  # find interface
+  #  @config.ethernet_interfaces.each do |name, interface|
+  #    next if interface.switchport.nil?
+  #    next if interface.switchport.added.nil?
+  #    interface.switchport.added.merge!()
+  #  end
+  #end
+
+  # for each port in the bridge table, find the corresponding port in the switch config
+  # then merge the VLANS class with the existing VLANS class..
+
+  # represent the bridge table
   module Bridge
     class Table
-      attr_reader :interfaces
+      attr_reader :entries
 
       def initialize(table)
-        @table      = table
-        @interfaces = {}
+        @table   = table
+        @entries = {}
 
         self.objectify
       end
 
       def objectify
         @table.each do |identifier, entry|
-          @interfaces[identifier] = Switch::Bridge::Entry.new(identifier, entry)
+          @entries[identifier] = Switch::Bridge::Entry.new(identifier, entry)
         end
       end
+
+      def find_macs_for_port(stack_member, unit, port)
+        #puts "#{stack_member}, #{unit}, #{port}"
+        entries.each do |identifier, entry|
+          #puts entry.inspect
+          #puts identifier
+          #puts "#{entry.stack_member}, #{entry.unit}, #{entry.port}"
+          #puts entry.inspect
+          if entry.stack_member == stack_member and entry.unit == unit and entry.port == port
+            return entry.vlans
+            #puts "match!"
+            #puts "#{entry.stack_member}, #{entry.unit}, #{entry.port}"
+          end
+        end
+        return
+      end
+
+      def to_hash
+        {
+          :entries => @entries.to_hash
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
     end
 
     class Entry
-      attr_reader :name, :port, :unit, :switch_member, :vlans
+      attr_reader :identifier, :port, :unit, :stack_member, :vlans
 
       def initialize(identifier, entry)
         @identifier    = identifier
         @port          = entry[:port]
         @unit          = entry[:unit]
-        @switch_member = entry[:stack_member]
-        @vlans         = Switch::Interface::Attribute::Vlans.new(entry[:vlan]) unless entry[:vlan].nil?
+        @stack_member  = entry[:stack_member]
+        @vlans         = Switch::Attribute::Vlans.new(entry[:vlans]) unless entry[:vlans].nil?
       end
     end
+
+    def to_hash
+      {
+        :identifier => identifier,
+        :vlans => vlans,
+      }
+    end
+
+    alias_method :inspect, :to_hash
+    alias_method :to_s, :to_hash
   end
 
   class Config
@@ -81,8 +172,67 @@ class Switch
         end
       end
     end
+
+    def to_hash
+      {
+        :ethernet_interfaces => @ethernet_interfaces.to_hash,
+        :vlan_interfaces => @vlan_interfaces.to_hash,
+        :port_channel_interfaces => @port_channel_interfaces.to_hash
+      }
+    end
+
+    alias_method :inspect, :to_hash
+    alias_method :to_s, :to_hash
   end
 
+  # shared attributes between configs, interfaces and interface attributes
+  module Attribute
+    class Vlans
+      attr_accessor :vlans
+
+      def initialize(vlans)
+        @vlans = {}
+
+        vlans.each do |vlan, macs|
+          @vlans[vlan] = Switch::Attribute::Vlan.new(vlan, macs)
+        end
+      end
+
+      def each
+        @vlans.each { |x,y | yield x, y }
+      end
+
+      def to_hash
+        {
+          :vlans => vlans.to_hash
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
+    end
+
+    class Vlan
+      attr_accessor :vlan, :macs
+
+      def initialize(vlan, macs)
+        @vlan = vlan
+        @macs = macs
+      end
+
+      def to_hash
+        {
+          :vlan => vlan,
+          :macs => macs.to_hash,
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
+    end
+  end
+
+  # represent interface types
   class Interface
     class Ethernet
       attr_accessor :description, :stack_member, :port, :unit, :switchport
@@ -95,20 +245,45 @@ class Switch
         @unit         = interface[:unit]
         @switchport   = Switch::Interface::Attribute::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
       end
+
+      def to_hash
+        {
+          :identifier => @identifier,
+          :description => @description,
+          :stack_member => @stack_member,
+          :port => @port,
+          :unit => @unit,
+          :switchport => @switchport,
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
     end
 
     class Vlan
-      attr_reader :vlan, :description
+      attr_reader :identifier, :vlan, :description
 
       def initialize(identifier, interface)
         @identifier  = identifier
         @vlan        = interface[:vlan]
         @description = interface[:description]
       end
+
+      def to_hash
+        {
+          :identifier => identifier,
+          :description => description,
+          :vlan => vlan
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
     end
 
     class PortChannel
-      attr_reader :description, :channel, :switchport
+      attr_reader :identifier, :description, :channel, :switchport
 
       def initialize(identifier, interface)
         @identifier  = identifier
@@ -116,44 +291,47 @@ class Switch
         @channel     = interface[:channel]
         @switchport  = Switch::Interface::Attribute::Switchport.new(interface[:switchport])
       end
+
+      def to_hash
+        {
+          :identifier => identifier,
+          :description => description,
+          :channel => channel,
+          :switchport => switchport.to_hash,
+        }
+      end
+
+      alias_method :inspect, :to_hash
+      alias_method :to_s, :to_hash
     end
 
+    # interface attributes
     module Attribute
       class Switchport
-        attr_reader :mode, :vlans
+        attr_reader :mode, :added, :removed
 
         def initialize(switchport)
           @mode    = switchport[:mode]
           unless switchport[:vlans].nil?
             unless switchport[:vlans][:add].nil?
-              @added = Switch::Interface::Attribute::Vlans.new(switchport[:vlans][:add])
+              @added = Switch::Attribute::Vlans.new(switchport[:vlans][:add])
             end
             unless switchport[:vlans][:remove].nil?
-              @removed = Switch::Interface::Attribute::Vlans.new(switchport[:vlans][:remove])
+              @removed = Switch::Attribute::Vlans.new(switchport[:vlans][:remove])
             end
           end
         end
-      end
 
-      class Vlans
-        attr_accessor :vlans
-
-        def initialize(vlans)
-          @vlans = {}
-
-          vlans.each do |vlan, macs|
-            @vlans[vlan] = Switch::Interface::Attribute::Vlan.new(vlan, macs)
-          end
+        def to_hash
+          {
+            :mode => mode,
+            :added => added.to_hash,
+            :removed => removed,
+          }
         end
-      end
 
-      class Vlan
-        attr_accessor :vlan, :macs
-
-        def initialize(vlan, macs)
-          @vlan = vlan
-          @macs = macs
-        end
+        alias_method :inspect, :to_hash
+        alias_method :to_s, :to_hash
       end
     end
   end

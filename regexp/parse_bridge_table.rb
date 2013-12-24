@@ -29,15 +29,15 @@ class SwitchBridgeTableParser
       when /ch2/
       when /[0-9]_[a-z]{0,2}[0-9]{0,2}/
         @config[interface][:stack_member] = interface.split('_')[0]
-        @config[interface][:unit] = interface.split('_')[1].match(/[0-9]/)[0]
-        @config[interface][:port] = interface.split('_')[1].match(/[a-z]+/)[0]
+        @config[interface][:unit] = interface.split('_')[1].match(/[a-z]/)[0]
+        @config[interface][:port] = interface.split('_')[1].match(/[0-9]+/)[0]
       else
         raise ArgumentError, "unknown interface type: #{interface}"
       end
 
-      @config[interface][:vlan] ||= {}
-      @config[interface][:vlan][vlan] ||= {}
-      @config[interface][:vlan][vlan].merge!({ mac => mode })
+      @config[interface][:vlans] ||= {}
+      @config[interface][:vlans][vlan] ||= {}
+      @config[interface][:vlans][vlan].merge!({ mac => mode })
     end
   end
 

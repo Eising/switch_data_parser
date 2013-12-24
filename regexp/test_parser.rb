@@ -6,6 +6,7 @@ require_relative 'switch'
 
 require 'awesome_print'
 require 'hash_deep_merge'
+require 'pp'
 
 config_parser = SwitchConfigParser.new(IO.readlines("../data/switch.config"))
 config_parser.parse_config
@@ -25,11 +26,17 @@ bridge_table = bridge_table_parser.get_config
 #ap config_parser.get_config.deep_merge(bridge_table_parser.get_config)
 
 switch = Switch.new
-switch.load_bridge_table(bridge_table)
 switch.load_switch_config(switch_config)
+switch.load_bridge_table(bridge_table)
 
-ap switch.config #.vlan_interfaces
+ap switch.to_hash
+#ap switch.config #.vlan_interfaces
+#ap switch.bridge_table.entries
 #ap switch.config #.port_channel_interfaces
+
+#switch.bridge_table.entries.each do |name, entry|
+#  ap entry.vlans
+#end
 
 #switch.config.ethernet_interfaces.each do |identifier, interface|
 #  ap identifier
