@@ -164,7 +164,7 @@ class Switch
         @vlans = {}
 
         vlans.each do |vlan, macs|
-          @vlans[vlan] = Switch::Attribute::Vlan.new(vlan, macs)
+          @vlans[vlan.to_i] = Switch::Attribute::Vlan.new(vlan, macs)
         end
       end
 
