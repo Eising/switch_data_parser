@@ -16,23 +16,20 @@ class Switch
     merge_bridge_table_entries_with_switch_config
   end
 
-  # FIXME: 'duplicate' @config and call it 'merged data' to prevent confusion between data sources and merged data
-
   # FIXME: check for mismatch between vlan 'modes' between bridge table and config
-  def merge_bridge_table_entries_with_switch_config
-#    @bridge_table.entries.each do |identifier, entry|
-#      puts identifier
-#      puts entry.port
-#      puts entry.unit
-#      puts entry.stack_member
-#      ap entry.vlans
-#    end
 
+  def merge_bridge_table_entries_with_switch_config
     @config.ethernet_interfaces.each do |identifier, interface|
       if defined?(interface.switchport.added)
-        macs = @bridge_table.find_macs_for_port(interface.stack_member, interface.unit, interface.port)
-        unless macs.nil?
-          interface.switchport.added.vlans.merge!(macs)
+
+        vlans = @bridge_table.find_macs_for_port(interface.stack_member, interface.unit, interface.port)
+
+        next if vlans.nil?
+
+        interface.switchport.added.vlans.each do |vlan, data|
+          next if data.nil?
+          next if vlans[vlan].nil?
+          data.macs = vlans[vlan].macs
         end
       end
     end
@@ -47,26 +44,6 @@ class Switch
 
   alias_method :inspect, :to_hash
   alias_method :to_s, :to_hash
-
-  # for each vlan associated with an ethernet interface
-  # search the bridge table for the interface port
-  # then merge the resulting MAC hash with
-  # the interface add hash
-  #def merge_vlan(stack_member, port, unit, vlans)
-
-    # return macs based on vlan
-    #@bridge_table.entries[]
-
-  #  # find interface
-  #  @config.ethernet_interfaces.each do |name, interface|
-  #    next if interface.switchport.nil?
-  #    next if interface.switchport.added.nil?
-  #    interface.switchport.added.merge!()
-  #  end
-  #end
-
-  # for each port in the bridge table, find the corresponding port in the switch config
-  # then merge the VLANS class with the existing VLANS class..
 
   # represent the bridge table
   module Bridge
@@ -87,16 +64,9 @@ class Switch
       end
 
       def find_macs_for_port(stack_member, unit, port)
-        #puts "#{stack_member}, #{unit}, #{port}"
         entries.each do |identifier, entry|
-          #puts entry.inspect
-          #puts identifier
-          #puts "#{entry.stack_member}, #{entry.unit}, #{entry.port}"
-          #puts entry.inspect
           if entry.stack_member == stack_member and entry.unit == unit and entry.port == port
-            return entry.vlans
-            #puts "match!"
-            #puts "#{entry.stack_member}, #{entry.unit}, #{entry.port}"
+            return entry.vlans.vlans
           end
         end
         return
@@ -308,7 +278,7 @@ class Switch
     # interface attributes
     module Attribute
       class Switchport
-        attr_reader :mode, :added, :removed
+        attr_reader :mode, :added, :removed, :acceptable_frame_type
 
         def initialize(switchport)
           @mode    = switchport[:mode]
@@ -320,6 +290,8 @@ class Switch
               @removed = Switch::Attribute::Vlans.new(switchport[:vlans][:remove])
             end
           end
+
+          @acceptable_frame_type = switchport[:acceptable_frame_type]
         end
 
         def to_hash
@@ -327,6 +299,7 @@ class Switch
             :mode => mode,
             :added => added.to_hash,
             :removed => removed,
+            :acceptable_frame_type => acceptable_frame_type,
           }
         end
 
