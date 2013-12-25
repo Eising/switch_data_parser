@@ -1,4 +1,9 @@
 #!/usr/bin/env ruby
+#
+# TODO
+# * probably should check to make sure all attributes from the config hash
+#   has been added to the object so nothing is missed..
+#
 
 class Switch
 
@@ -11,12 +16,7 @@ class Switch
 
   def load_bridge_table(config)
     @bridge_table = Switch::Bridge::Table.new(config)
-
-    # FIXME; remove this from this method
-    merge_bridge_table_entries_with_switch_config
   end
-
-  # FIXME: check for mismatch between vlan 'modes' between bridge table and config
 
   def merge_bridge_table_entries_with_switch_config
     @config.ethernet_interfaces.each do |identifier, interface|
