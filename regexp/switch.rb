@@ -87,9 +87,9 @@ class Switch
 
       def initialize(identifier, entry)
         @identifier    = identifier
-        @port          = entry[:port]
+        @port          = entry[:port].to_i
         @unit          = entry[:unit]
-        @stack_member  = entry[:stack_member]
+        @stack_member  = entry[:stack_member].to_i
         @vlans         = Switch::Attribute::Vlans.new(entry[:vlans]) unless entry[:vlans].nil?
       end
     end
@@ -186,7 +186,7 @@ class Switch
       attr_accessor :vlan, :macs
 
       def initialize(vlan, macs)
-        @vlan = vlan
+        @vlan = vlan.to_i
         @macs = macs
       end
 
@@ -210,9 +210,9 @@ class Switch
       def initialize(identifier, interface)
         @identifier   = identifier
         @description  = interface[:description]
-        @stack_member = interface[:stack_member]
-        @port         = interface[:port]
-        @unit         = interface[:unit]
+        @stack_member = interface[:stack_member].to_i
+        @port         = interface[:port].to_i
+        @unit         = interface[:unit].to_i
         @switchport   = Switch::Interface::Attribute::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
       end
 
