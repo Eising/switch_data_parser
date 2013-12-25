@@ -212,7 +212,7 @@ class Switch
         @description  = interface[:description]
         @stack_member = interface[:stack_member].to_i
         @port         = interface[:port].to_i
-        @unit         = interface[:unit].to_i
+        @unit         = interface[:unit]
         @switchport   = Switch::Interface::Attribute::Switchport.new(interface[:switchport]) unless interface[:switchport].nil?
       end
 
