@@ -18,7 +18,8 @@ class Switch
     @bridge_table = Switch::Bridge::Table.new(config)
   end
 
-  def merge_bridge_table_entries_with_switch_config
+  # combine switch config and bridge_table data
+  def combine_data
     @config.ethernet_interfaces.each do |identifier, interface|
       if defined?(interface.switchport.added)
 
@@ -33,6 +34,9 @@ class Switch
         end
       end
     end
+  end
+
+  def find_port(mac)
   end
 
   def to_hash

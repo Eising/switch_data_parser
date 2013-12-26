@@ -5,12 +5,16 @@ class SwitchConfigParser
     @io     = io
     @debug  = debug
     @config = {}
+
+    parse_config
   end
 
   def setup_hash(type, line)
     @config[:interface] ||= {}
     @config[:interface][type] ||= {}
+
     identifier = line.gsub(/ /, '_').gsub(/-/, '_').gsub(/\//, '_').chomp
+
     @config[:interface][type][identifier] ||= {}
     @config[:interface][type][identifier]
   end

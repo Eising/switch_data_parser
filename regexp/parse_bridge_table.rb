@@ -5,6 +5,8 @@ class SwitchBridgeTableParser
     @io     = io
     @debug  = debug
     @config = {}
+
+    parse_config
   end
 
   def parse_config
