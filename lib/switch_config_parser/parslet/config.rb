@@ -3,7 +3,7 @@
 require 'awesome_print'
 require 'parslet'
 
-class SwitchConfigParslet < Parslet::Parser
+class SwitchConfigParser::Parslet::Config < Parslet::Parser
 
   rule(:spaces) { match('\s').repeat(1) }
   rule(:spaces?) { spaces.maybe }
