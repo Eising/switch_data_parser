@@ -3,7 +3,7 @@
 module SwitchConfigParser
   module Regexp
     module BridgeTable
-      def parse(io, debug = false)
+      def self.parse(io, debug = false)
         @config = {}
 
         io.each do |line|

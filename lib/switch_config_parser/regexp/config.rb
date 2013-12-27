@@ -3,7 +3,7 @@
 module SwitchConfigParser
   module Regexp
     module Config
-      def setup_hash(type, line)
+      def self.setup_hash(type, line)
         @config[:interface] ||= {}
         @config[:interface][type] ||= {}
 
@@ -13,10 +13,9 @@ module SwitchConfigParser
         @config[:interface][type][identifier]
       end
 
-      def parse(io, debug = false)
+      def self.parse(io, debug = false)
+        @debug  = debug
         @config = {}
-
-        parse_config
 
         io.each do |line|
 
@@ -29,21 +28,21 @@ module SwitchConfigParser
             next
 
           when /interface ethernet/ then
-            @interface_ethernet = setup_hash(:ethernet, line)
+            @interface_ethernet = self.setup_hash(:ethernet, line)
             @in_interface_block = :ethernet
-            parse_interface_ethernet(line)
+            self.parse_interface_ethernet(line)
             next
 
           when /interface vlan/ then
-            @interface_vlan = setup_hash(:vlan, line)
+            @interface_vlan = self.setup_hash(:vlan, line)
             @in_interface_block = :vlan
-            parse_interface_vlan(line)
+            self.parse_interface_vlan(line)
             next
 
           when /interface port-channel/ then
-            @interface_port_channel = setup_hash(:port_channel, line)
+            @interface_port_channel = self.setup_hash(:port_channel, line)
             @in_interface_block = :port_channel
-            parse_interface_port_channel(line)
+            self.parse_interface_port_channel(line)
             next
 
           when /^exit/ then
@@ -53,11 +52,11 @@ module SwitchConfigParser
           end
 
           case @in_interface_block
-          when :ethernet     then parse_interface_ethernet(line)
-          when :vlan         then parse_interface_vlan(line)
-          when :port_channel then parse_interface_port_channel(line)
+          when :ethernet     then self.parse_interface_ethernet(line)
+          when :vlan         then self.parse_interface_vlan(line)
+          when :port_channel then self.parse_interface_port_channel(line)
           else
-            puts "unrecognised line: #{line}" if debug
+            puts "unrecognised line: #{line}" if @debug
           end
         end
 
@@ -66,7 +65,7 @@ module SwitchConfigParser
 
       private
 
-      def parse_vlan_line(line)
+      def self.parse_vlan_line(line)
         if line =~ /switchport access vlan/
           ranges = line.split(' ')[3].split(',')
         else
@@ -89,14 +88,14 @@ module SwitchConfigParser
         #vlans.flatten
       end
 
-      def parse_switchport(line, config)
+      def self.parse_switchport(line, config)
         switchport = config[:switchport] ||= {}
 
         case line
         when /switchport access vlan/
           switchport[:mode] = 'access'
           switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = parse_vlan_line(line)
+          switchport[:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport mode trunk/
           switchport[:mode] ||= {}
@@ -108,29 +107,29 @@ module SwitchConfigParser
 
         when /switchport trunk allowed vlan add/
           switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = parse_vlan_line(line)
+          switchport[:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport trunk allowed vlan remove/
           switchport[:vlans] ||= {}
-          switchport[:vlans][:remove] = parse_vlan_line(line)
+          switchport[:vlans][:remove] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan add/
           switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = parse_vlan_line(line)
+          switchport[:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan remove/
           switchport[:vlans] ||= {}
-          switchport[:vlans][:remove] = parse_vlan_line(line)
+          switchport[:vlans][:remove] = self.parse_vlan_line(line)
 
         when /switchport general acceptable-frame-type/
           switchport[:acceptable_frame_type] = line.split[-1]
 
         else
-          puts "unrecognised line: #{line}" if debug
+          puts "unrecognised line: #{line}" if @debug
         end
       end
 
-      def parse_interface_vlan(line)
+      def self.parse_interface_vlan(line)
         case line
 
         when /interface vlan/
@@ -140,11 +139,11 @@ module SwitchConfigParser
           @interface_vlan[:description] = line.gsub(/name "/, '').chomp.chomp('"')
 
         else
-          puts "unrecognised line: #{line}" if debug
+          puts "unrecognised line: #{line}" if @debug
         end
       end
 
-      def parse_interface_ethernet(line)
+      def self.parse_interface_ethernet(line)
         case line
 
         when /interface ethernet/
@@ -165,11 +164,11 @@ module SwitchConfigParser
           parse_switchport(line, @interface_ethernet)
 
         else
-          puts "unrecognised line: #{line}" if debug
+          puts "unrecognised line: #{line}" if @debug
         end
       end
 
-      def parse_interface_port_channel(line)
+      def self.parse_interface_port_channel(line)
         case line
 
         when /interface port-channel/
@@ -182,7 +181,7 @@ module SwitchConfigParser
           parse_switchport(line, @interface_port_channel)
 
         else
-          puts "unrecognised line: #{line}" if debug
+          puts "unrecognised line: #{line}" if @debug
         end
       end
     end
