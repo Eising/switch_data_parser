@@ -24,3 +24,4 @@ pp SwitchDataParser::Regexp::BridgeAddressTable.parse(File.read("bridge_address_
 ## Notes
 
 * Tested on Dell switch configs
+* You could use switch_exec to help you fetch the output of commands from a switch: https://github.com/roobert/switch_exec
