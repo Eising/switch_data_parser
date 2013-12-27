@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
 class SwitchConfigParser
+  attr_reader :config
+
   def initialize(io, debug = false)
     @io     = io
     @debug  = debug
@@ -63,10 +65,6 @@ class SwitchConfigParser
         puts "unrecognised line: #{line}" if @debug
       end
     end
-  end
-
-  def get_config
-    @config
   end
 
   private

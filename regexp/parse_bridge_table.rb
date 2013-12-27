@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
 class SwitchBridgeTableParser
+  attr_reader :config
+
   def initialize(io, debug = false)
     @io     = io
     @debug  = debug
@@ -41,9 +43,5 @@ class SwitchBridgeTableParser
       @config[interface][:vlans][vlan] ||= {}
       @config[interface][:vlans][vlan].merge!({ mac => mode })
     end
-  end
-
-  def get_config
-    @config
   end
 end
