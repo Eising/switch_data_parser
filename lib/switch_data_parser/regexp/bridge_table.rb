@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-module SwitchConfigParser
+module SwitchDataParser
   module Regexp
     module BridgeTable
       def self.parse(io, debug = false)

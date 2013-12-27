@@ -1,17 +1,23 @@
-# Switch Config Parser
+# Switch Data Parser
 
+## About
 
-## Usage
+Designed to parse various data collected from switches and output a hash. Supported data types:
+
+* switch config files
+* switch bridge tables
+* switch snmp data
+
+## Example
 
 ```
-require 'switch_config_parser'
+require 'switch_data_parser'
 require 'pp'
 
-pp SwitchConfigParser::Regexp::Config.parse(File.read("switch.config"))
-pp SwitchConfigParser::Regexp::BridgeTable.parse(File.read("bridge_table.config"))
+pp SwitchDataParser::Regexp::Config.parse(File.read("switch.config"))
+pp SwitchDataParser::Regexp::BridgeTable.parse(File.read("bridge_table.config"))
 ```
-
 
 ## Notes
 
-Tested on Dell switch configs.
+* Tested on Dell switch configs

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-module SwitchConfigParser
+module SwitchDataParser
   module Regexp
     module Config
       def self.setup_hash(type, line)
