@@ -4,8 +4,8 @@
 
 Designed to parse various data collected from switches and output a hash. Supported data types:
 
-* switch config files
-* switch bridge tables
+* switch running config
+* switch bridge address tables
 * switch snmp data
 
 ## Example
@@ -14,8 +14,11 @@ Designed to parse various data collected from switches and output a hash. Suppor
 require 'switch_data_parser'
 require 'pp'
 
-pp SwitchDataParser::Regexp::Config.parse(File.read("switch.config"))
-pp SwitchDataParser::Regexp::BridgeTable.parse(File.read("bridge_table.config"))
+# write the output of 'show running-config' to a file and then run:
+pp SwitchDataParser::Regexp::Config.parse(File.read("running_config.txt"))
+
+# write the output of 'show bridge address-table' to a file and then run:
+pp SwitchDataParser::Regexp::BridgeAddressTable.parse(File.read("bridge_address_table.txt"))
 ```
 
 ## Notes

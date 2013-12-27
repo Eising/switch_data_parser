@@ -2,7 +2,7 @@
 
 module SwitchDataParser
   module Regexp
-    module BridgeTable
+    module BridgeAddressTable
       def self.parse(io, debug = false)
         @config = {}
 
