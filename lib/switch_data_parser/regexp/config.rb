@@ -82,7 +82,7 @@ module SwitchDataParser
 
         vlan_hash = {}
 
-        vlans.flatten.each { |vlan| vlan_hash[vlan] = {} unless vlan.nil? }
+        vlans.flatten.each { |vlan| vlan_hash[vlan.to_i] = {} unless vlan.nil? }
 
         vlan_hash
         #vlans.flatten
@@ -133,7 +133,7 @@ module SwitchDataParser
         case line
 
         when /interface vlan/
-          @interface_vlan.merge!({ :vlan => line.split[2] })
+          @interface_vlan.merge!({ :vlan => line.split[2].to_i })
 
         when /name/
           @interface_vlan[:description] = line.gsub(/name "/, '').chomp.chomp('"')
@@ -147,8 +147,8 @@ module SwitchDataParser
         case line
 
         when /interface ethernet/
-          @interface_ethernet[:stack_member] = line.split[2].split('/')[0]
-          @interface_ethernet[:port] = line.split[2].split('/')[1].gsub(/[a-z]*/, '')
+          @interface_ethernet[:stack_member] = line.split[2].split('/')[0].to_i
+          @interface_ethernet[:port] = line.split[2].split('/')[1].gsub(/[a-z]*/, '').to_i
           @interface_ethernet[:unit] = line.split[2].split('/')[1].gsub(/[0-9]*/, '')
 
         when /description/
