@@ -28,7 +28,7 @@ module SwitchDataParser
           when /cpu/
           when /[0-9]_[a-z]{0,2}[0-9]{0,2}/
             @config[interface][:stack_member] = interface.split('_')[0].to_i
-            @config[interface][:unit] = interface.split('_')[1].match(/[a-z]/)[0]
+            @config[interface][:unit] = interface.split('_')[1].match(/[a-z]+/)[0]
             @config[interface][:port] = interface.split('_')[1].match(/[0-9]+/)[0].to_i
           else
             raise ArgumentError, "unknown interface type: #{interface}"
