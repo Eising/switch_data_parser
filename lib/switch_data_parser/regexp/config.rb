@@ -147,8 +147,8 @@ module SwitchDataParser
 
         when /interface ethernet/
           @interface_ethernet[:stack_member] = line.split[2].split('/')[0].to_i
-          @interface_ethernet[:port] = line.split[2].split('/')[1].match(/[0-9]*/)[0].to_i
-          @interface_ethernet[:unit] = line.split[2].split('/')[1].match(/[a-z]*/)[0]
+          @interface_ethernet[:port] = line.split[2].split('/')[1].match(/[0-9]+/)[0].to_i
+          @interface_ethernet[:unit] = line.split[2].split('/')[1].match(/[a-z]+/)[0]
 
         when /description/
           @interface_ethernet[:description] = line.gsub(/description '/, '').chomp.chomp('\'')
