@@ -88,44 +88,56 @@ module SwitchDataParser
       end
 
       def self.parse_switchport(line, config)
-        switchport = config[:switchport] ||= {}
+
+        config[:switchports] ||= []
+
+        switchport = {}
 
         case line
         when /switchport access vlan/
-          switchport[:mode] = 'access'
-          switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = self.parse_vlan_line(line)
+          switchport[:access] ||= {}
+          switchport[:access][:vlans] = self.parse_vlan_line(line)
 
         when /switchport mode trunk/
-          switchport[:mode] ||= {}
           switchport[:mode] = 'trunk'
 
         when /switchport mode general/
-          switchport[:mode] ||= {}
           switchport[:mode] = 'general'
 
         when /switchport trunk allowed vlan add/
-          switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = self.parse_vlan_line(line)
+          switchport[:trunk] ||= {}
+          switchport[:trunk][:allowed] ||= {}
+          switchport[:trunk][:allowed][:vlans] ||= {}
+          switchport[:trunk][:allowed][:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport trunk allowed vlan remove/
-          switchport[:vlans] ||= {}
-          switchport[:vlans][:remove] = self.parse_vlan_line(line)
+          switchport[:trunk] ||= {}
+          switchport[:trunk][:allowed] ||= {}
+          switchport[:trunk][:allowed][:vlans] ||= {}
+          switchport[:trunk][:allowed][:vlans][:remove] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan add/
-          switchport[:vlans] ||= {}
-          switchport[:vlans][:add] = self.parse_vlan_line(line)
+          switchport[:general] ||= {}
+          switchport[:general][:allowed] ||= {}
+          switchport[:general][:allowed][:vlans] ||= {}
+          switchport[:general][:allowed][:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan remove/
-          switchport[:vlans] ||= {}
-          switchport[:vlans][:remove] = self.parse_vlan_line(line)
+          switchport[:general] ||= {}
+          switchport[:general][:allowed][:vlans] ||= {}
+          switchport[:general][:allowed][:vlans][:remove] = self.parse_vlan_line(line)
 
         when /switchport general acceptable-frame-type/
-          switchport[:acceptable_frame_type] = line.split[-1]
+          switchport[:general] ||= {}
+          switchport[:general][:acceptable_frame_type] = line.split[-1]
 
         else
           puts "unrecognised line: #{line}" if @debug
         end
+
+        ap line
+        config[:switchports].push switchport
+        ap config
       end
 
       def self.parse_interface_vlan(line)
