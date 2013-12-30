@@ -35,8 +35,8 @@ module SwitchDataParser
           end
 
           @config[interface][:vlans] ||= {}
-          @config[interface][:vlans][vlan.to_i] ||= {}
-          @config[interface][:vlans][vlan.to_i].merge!({ mac => mode })
+          @config[interface][:vlans][vlan.to_i] ||= []
+          @config[interface][:vlans][vlan.to_i].push({ :mac => mac, :mode => mode })
         end
 
         @config

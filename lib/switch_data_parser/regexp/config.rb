@@ -96,6 +96,7 @@ module SwitchDataParser
         case line
         when /switchport access vlan/
           switchport[:access] ||= {}
+          switchport[:access][:tagged] = true if line =~ /tagged$/
           switchport[:access][:vlans] = self.parse_vlan_line(line)
 
         when /switchport mode trunk/
@@ -106,24 +107,28 @@ module SwitchDataParser
 
         when /switchport trunk allowed vlan add/
           switchport[:trunk] ||= {}
+          switchport[:trunk][:tagged] = true if line =~ /tagged$/
           switchport[:trunk][:allowed] ||= {}
           switchport[:trunk][:allowed][:vlans] ||= {}
           switchport[:trunk][:allowed][:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport trunk allowed vlan remove/
           switchport[:trunk] ||= {}
+          switchport[:trunk][:tagged] = true if line =~ /tagged$/
           switchport[:trunk][:allowed] ||= {}
           switchport[:trunk][:allowed][:vlans] ||= {}
           switchport[:trunk][:allowed][:vlans][:remove] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan add/
           switchport[:general] ||= {}
+          switchport[:general][:tagged] = true if line =~ /tagged$/
           switchport[:general][:allowed] ||= {}
           switchport[:general][:allowed][:vlans] ||= {}
           switchport[:general][:allowed][:vlans][:add] = self.parse_vlan_line(line)
 
         when /switchport general allowed vlan remove/
           switchport[:general] ||= {}
+          switchport[:general][:tagged] = true if line =~ /tagged$/
           switchport[:general][:allowed][:vlans] ||= {}
           switchport[:general][:allowed][:vlans][:remove] = self.parse_vlan_line(line)
 
@@ -135,9 +140,7 @@ module SwitchDataParser
           puts "unrecognised line: #{line}" if @debug
         end
 
-        ap line
         config[:switchports].push switchport
-        ap config
       end
 
       def self.parse_interface_vlan(line)
